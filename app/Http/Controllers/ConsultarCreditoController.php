@@ -10,8 +10,12 @@ class ConsultarCreditoController extends Controller
 {
     public function exibirCredito( Request $request){
         $cpf = $request->cpf;
-        $consulta =  ConsultarCreditoService::consultarCredito($cpf);
-        dd($consulta);
+        if(is_numeric($cpf) && strlen($cpf) == 11 ){
+            $consulta =  ConsultarCreditoService::consultarCredito($cpf);
+            return json_encode($consulta, JSON_UNESCAPED_UNICODE);
+        }
+        return 'Porfavor Insira Um Cpf Valido Com 11 Digitos, Não Pode Conter Letras';
+
     }
 
 }
