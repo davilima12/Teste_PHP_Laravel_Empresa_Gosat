@@ -1,3 +1,60 @@
-Para Rodar o Teste , Basta escrever No Terminal o Comando "php artisan serve" ,E acessar A Rota "http://localhost:8000/api/consultaCredito/11111111111" Passando O Cpf Desejado
+# QuickStart
 
-CPF disponiveis : "11111111111","12312312312","22222222222" .
+
+### Requisitos: 
+
+```
+PHP 7.4.3
+Composer version 2.3.7
+```
+
+
+### Instalar Dependencias 
+
+```
+composer install
+```
+
+### Rodar o Projeto:
+
+```
+php artisan serve
+
+```
+### Endpoint
+#### GET - /api/consultaCredito/$cpf
+
+```
+Exemplo: "http://localhost:8000/api/consultaCredito/11111111111
+```
+#### Exemplo de Resposta
+```
+[
+    {
+        "instituicaoFinanceira": "Financeira Assert",
+        "modalidadeCredito": "crédito pessoal",
+        "valorAPagar": 7122.64,
+        "valorSolicitado": 7000,
+        "qntParcelas": 48,
+        "taxaJuros": 122.64
+    },
+    {
+        "instituicaoFinanceira": "Banco PingApp",
+        "modalidadeCredito": "crédito consignado",
+        "valorAPagar": 19413.55,
+        "valorSolicitado": 19250,
+        "qntParcelas": 72,
+        "taxaJuros": 163.55
+    },
+    {
+        "instituicaoFinanceira": "Banco PingApp",
+        "modalidadeCredito": "crédito pessoal",
+        "valorAPagar": 8190.08,
+        "valorSolicitado": 8000,
+        "qntParcelas": 48,
+        "taxaJuros": 190.08
+    }
+]
+```
+
+### CPF disponiveis : "11111111111","12312312312","22222222222" .
