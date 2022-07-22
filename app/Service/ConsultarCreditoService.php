@@ -4,24 +4,26 @@ namespace App\Service;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\RequestHandler\DevGosatRequestHandler;
+use App\Service\JurosCalculatorService;
 
 class ConsultarCreditoService
 {
-    public function consultarCredito($cpf){
-        $resposta =  Http::post('https://dev.gosat.org/api/v1/simulacao/credito',[
-            'cpf'=>$cpf,
-        ]);
-        $resposta = json_decode($resposta);
-        $instituicoes = self::instituicoesFinanceiras($resposta,$cpf);
+    public static function consultarCredito(string $cpf): array 
+    {
+        $instituicoeDoCLiente = DevGosatRequestHandler::consultaInstituicoesPorCpf($cpf);
+        $instituicoes = self::getDadosinstituicoesFinanceirasDoCliente($instituicoeDoCLiente,$cpf);
         $dadosDasOfertasCredito = self::ofertaDeCreditoDoCliente($instituicoes);
         $ofertasCreditos = self::calcularValorApagarOfertaCredito($dadosDasOfertasCredito);
         $ofertaCreditoOrdenada = self::ordenarOfertaCreditoMaisVantajosa($ofertasCreditos);
 
-        return $ofertaCreditoOrdenada ;
+        return $ofertaCreditoOrdenada;
     }
 
-    public function instituicoesFinanceiras($array,$cpf){
+    public static function getDadosinstituicoesFinanceirasDoCliente(object $array, string $cpf) : array
+    {
         $instituicoesFinanceiras = [];
+
         foreach($array->instituicoes as $instituicao){
             $instituicoesFinanceiras[] = [
                 'id' => $instituicao->id,
@@ -34,46 +36,55 @@ class ConsultarCreditoService
         return ($instituicoesFinanceiras);
     }
 
-    public function ofertaDeCreditoDoCliente($dados){
+    public static function ofertaDeCreditoDoCliente(array $dados): array
+    {
         $ofertasDoCliente = [];
+
         foreach($dados as $index => $ofertaCredito){
-            if(isset( $ofertaCredito['modalidades'][1])){
-                $ofertasDoCliente[] = [
-                    'instituicaoFinanceira' => $ofertaCredito['NomeDaInstituicao'],
-                    'modalidadeCredito' => $ofertaCredito['modalidades'][0]->nome,
-                    'ofertaDeCredito' => json_decode( Http::post('https://dev.gosat.org/api/v1/simulacao/oferta',[
-                    'cpf' => $ofertaCredito['cpfCLiente'],
-                    'instituicao_id' => $ofertaCredito['id'],
-                    'codModalidade' => $ofertaCredito['modalidades'][1]->cod
-                ]))]; 
-            }
+            $ofertasDoCliente = [
+                ...$ofertasDoCliente,
+                ...self::pegarModalidadesDeOfertaDeCredito($ofertaCredito)
+            ];
+        } 
+
+        return $ofertasDoCliente; 
+    }
+
+    public static function pegarModalidadesDeOfertaDeCredito(array $ofertaCredito): array
+    {
+        $ofertasDoCliente = [];
+
+        foreach ($ofertaCredito['modalidades'] as $modalidade){
             $ofertasDoCliente[] = [
                 'instituicaoFinanceira' => $ofertaCredito['NomeDaInstituicao'],
-                'modalidadeCredito' => $ofertaCredito['modalidades'][0]->nome,
-                'ofertaDeCredito' => json_decode( Http::post('https://dev.gosat.org/api/v1/simulacao/oferta',[
-                'cpf' => $ofertaCredito['cpfCLiente'],
-                'instituicao_id' => $ofertaCredito['id'],
-                'codModalidade' => $ofertaCredito['modalidades'][0]->cod
-            ]))];
+                'modalidadeCredito' => $modalidade->nome,
+                'ofertaDeCredito' => DevGosatRequestHandler::getSimulacaoOferta($ofertaCredito,$modalidade)
+            ]; 
         }
 
         return $ofertasDoCliente;
-        
     }
 
-    public function calcularValorApagarOfertaCredito($array){
-        $valorApagar = '';
+    public static function calcularValorApagarOfertaCredito(array $array): array
+    {
         $ofertasCreditoPessoal = [];
-        $taxaJuros = 0;
+
         foreach($array as $dadosDoCredito){
-            $taxaJuros = $dadosDoCredito['ofertaDeCredito']->jurosMes *  $dadosDoCredito['ofertaDeCredito']-> QntParcelaMax;
-            $valorAPagar = $dadosDoCredito['ofertaDeCredito']->valorMax + ($dadosDoCredito['ofertaDeCredito']->valorMax / 100 * $taxaJuros);
+            $valorMax = $dadosDoCredito['ofertaDeCredito']->valorMax;
+            $jurosMes = $dadosDoCredito['ofertaDeCredito']->jurosMes;
+            $parcelasMax = $dadosDoCredito['ofertaDeCredito']->QntParcelaMax;
+            $taxaJuros = JurosCalculatorService::calcularTotalDeJuros(
+                $valorMax,
+                $jurosMes,
+                $parcelasMax
+            );
+            $valorAPagar = JurosCalculatorService::calcularValorTotalComJuros($valorMax,$taxaJuros);
             $ofertasCreditoPessoal[] = [
                 'instituicaoFinanceira' => $dadosDoCredito['instituicaoFinanceira'],
                 'modalidadeCredito' => $dadosDoCredito['modalidadeCredito'],
                 'valorAPagar' => $valorAPagar,
-                'valorSolicitado' => $dadosDoCredito['ofertaDeCredito']->valorMax,
-                'qntParcelas' => $dadosDoCredito['ofertaDeCredito']->QntParcelaMax,
+                'valorSolicitado' => $valorMax,
+                'qntParcelas' => $parcelasMax,
                 'taxaJuros' => $taxaJuros,
             ];
         }
@@ -81,7 +92,8 @@ class ConsultarCreditoService
         return $ofertasCreditoPessoal;
     }
 
-    public function ordenarOfertaCreditoMaisVantajosa($array){
+    public static function ordenarOfertaCreditoMaisVantajosa(array $array): array
+    {
         $marks = array();
         foreach ($array as $key => $row)
         {
