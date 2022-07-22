@@ -13,7 +13,7 @@ class ConsultarCreditoController extends Controller
     {
         $cpf = $request->cpf;
         if(!is_numeric($cpf) && strlen($cpf) != 11 ){
-            return response()->json('Porfavor Insira Um Cpf Valido Com 11 Digitos, Não Pode Conter Letras');
+            return response()->json(['error' => 'Porfavor Insira Um Cpf Valido Com 11 Digitos, Não Pode Conter Letras']);
         }
 
         $consulta =  ConsultarCreditoService::consultarCredito($cpf);
