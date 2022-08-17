@@ -23,6 +23,7 @@ php artisan serve
 ```
 ### Endpoint
 #### GET - /api/consultaCredito/$cpf
+#### CPF disponiveis : "11111111111","12312312312","22222222222" .
 
 ```
 Exemplo: "http://localhost:8000/api/consultaCredito/11111111111
@@ -56,5 +57,9 @@ Exemplo: "http://localhost:8000/api/consultaCredito/11111111111
     }
 ]
 ```
-
-### CPF disponiveis : "11111111111","12312312312","22222222222" .
+#### Exemplo De Error
+```
+{
+    "error": "Porfavor Insira Um Cpf Valido Com 11 Digitos, Não Pode Conter Letras"
+}
+```
