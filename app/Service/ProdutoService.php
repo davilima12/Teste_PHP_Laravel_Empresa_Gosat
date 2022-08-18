@@ -2,16 +2,15 @@
 
 namespace App\Service;
 
-use App\Repositories\ProdutoRepositories;
 use App\Models\Produto;
-
+use App\Repositories\ProdutoRepositoriesInterface;
 
 class ProdutoService
 {
 
   private $repositories;
   private $model;
-  public function __construct(ProdutoRepositories $repositories, Produto $model)
+  public function __construct(ProdutoRepositoriesInterface $repositories, Produto $model)
   {
     $this->model = $model;
     $this->repositories = $repositories;

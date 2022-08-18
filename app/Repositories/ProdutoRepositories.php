@@ -2,14 +2,14 @@
 
 namespace App\Repositories;
 
-use App\Models\Produto;
+use Illuminate\Database\Eloquent\Model;
 
-class ProdutoRepositories
+class ProdutoRepositories implements produtoRepositoriesInterface
 {
 
   private $model;
 
-  public function __construct(Produto $model)
+  public function __construct(Model $model)
   {
     return $this->model = $model;
   }
