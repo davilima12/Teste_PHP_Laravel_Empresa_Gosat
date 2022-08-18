@@ -16,9 +16,17 @@ class ProdutoService
     $this->repositories = $repositories;
   }
 
-  public function index()
+  public function index($data)
   {
-    return $this->repositories->index();
+    $atributos = null;
+    $filtros = null;
+    if ($data->has('atributos')) {
+      $atributos = $data->atributos;
+    }
+    if ($data->has('filtros')) {
+      $filtros = explode(';', $data->filtros);
+    }
+    return $this->repositories->index($data, $atributos, $filtros);
   }
 
   public function store($data)

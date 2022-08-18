@@ -14,9 +14,20 @@ class ProdutoRepositories implements produtoRepositoriesInterface
     return $this->model = $model;
   }
 
-  public function index()
+  public function index($data, $params = null, $filtros = null)
   {
-    return response()->json($this->model->all());
+
+    if ($filtros != null) {
+      foreach ($filtros as $condicao) {
+        $filtro = explode(':', $condicao);
+        $this->model =  $this->model->where($filtro[0], $filtro[1], $filtro[2]);
+      }
+    }
+    if ($params != null) {
+      return  $this->model->selectRaw($params)->get();
+    }
+
+    return $this->model->get();
   }
 
   public function store($data)
@@ -26,7 +37,7 @@ class ProdutoRepositories implements produtoRepositoriesInterface
 
   public function show($id)
   {
-    return response()->json($this->model->find($id));
+    return $this->model->find($id);
   }
 
   public function update($data, $id)
