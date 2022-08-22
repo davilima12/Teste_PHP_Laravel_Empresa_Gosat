@@ -48,6 +48,8 @@ class ProdutoService
 
   public function destroy($id)
   {
-    return $this->repositories->destroy($id);
+    if ($this->model->find($id) != null) {
+      return $this->repositories->destroy($id);
+    }
   }
 }

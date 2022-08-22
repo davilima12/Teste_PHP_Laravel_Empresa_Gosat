@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Service\ProdutoService;
+use Exception;
 use Illuminate\Http\Request;
+use PhpParser\Node\Stmt\TryCatch;
 
 class ProdutoController extends Controller
 {
@@ -37,7 +39,15 @@ class ProdutoController extends Controller
 
     public function destroy($id)
     {
-        $this->service->destroy($id);
-        return response()->json(['result' => 'Registro Deletado Com Sucesso']);
+
+
+        try {
+            if ($this->service->destroy($id) != null) {
+                return response()->json(['result' => 'Registro Deletado Com Sucesso']);
+            }
+            return response()->json(['error' => 'Não Enxiste Um Registro Com Esse Id'], 404);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 }

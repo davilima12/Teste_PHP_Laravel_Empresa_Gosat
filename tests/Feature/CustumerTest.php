@@ -106,4 +106,13 @@ class CustumerTest extends TestCase
 
         $response->assertStatus(200)->assertJson(['result' => 'Registro Deletado Com Sucesso']);
     }
+    /**
+     * @test
+     */
+    public function deletar_testar_se_pode_deletar_registros_nao_enxistentes_respose_json()
+    {
+        $response = $this->deleteJson('/api/produtos/12');
+
+        $response->assertStatus(404)->assertJson(['error' => 'Não Enxiste Um Registro Com Esse Id']);
+    }
 }
