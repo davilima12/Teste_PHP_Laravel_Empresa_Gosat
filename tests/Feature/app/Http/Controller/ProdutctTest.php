@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Produto;
 
-class CustumerTest extends TestCase
+class ProdutctTest extends TestCase
 {
     /**
      * @test
